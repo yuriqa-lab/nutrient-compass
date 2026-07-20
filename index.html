@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>栄養コンパス — Nutrient Compass</title>
+<meta name="description" content="悩みを選ぶと、効く栄養素・食べる量の目安・今日のおすすめ食材と料理を示す、ローカル完結の栄養羅針盤。">
+<style>
+:root{
+  --bg:#131511; --surface:#1b1e18; --surface2:#232720; --line:#31362c;
+  --ink:#eaece6; --ink2:#adb3a6; --ink3:#707668;
+  --accent:#8fba5e; --accent-deep:#6d9741; --accent-soft:rgba(143,186,94,.14);
+  --amber:#dfa844; --r:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;line-height:1.7;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:920px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:clamp(20px,4vw,26px)}
+h1 .sub{font-size:.55em;color:var(--ink2);font-weight:400;margin-left:8px;letter-spacing:1px}
+.tagline{color:var(--ink3);font-size:13px;margin:4px 0 18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.card h2{font-size:15px;margin-bottom:4px}
+.card .sub2{font-size:12px;color:var(--ink3);margin-bottom:12px}
+.goals{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.goal{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;
+  padding:10px 12px;color:var(--ink2);font-size:13px;text-align:left;transition:all .15s}
+.goal:hover{border-color:var(--ink3)}
+.goal.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:600}
+.goal .em{font-size:18px}
+.today{border-color:var(--accent-deep)}
+.pick{display:flex;align-items:baseline;gap:10px;border-top:1px solid var(--line);padding:9px 2px;flex-wrap:wrap}
+.pick:first-of-type{border-top:none}
+.pick .fname{font-weight:700;font-size:15px}
+.pick .fwhy{font-size:12px;color:var(--ink2)}
+.pick .hits{font-size:11px;color:var(--accent);white-space:nowrap}
+.dish{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:8px}
+.dish b{font-size:14px}
+.dish .dm{font-size:12px;color:var(--ink2)}
+.nut{border:1px solid var(--line);border-radius:10px;background:var(--surface2);padding:12px 14px;margin-bottom:8px}
+.nut .head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;cursor:pointer}
+.nut .nname{font-weight:700;font-size:15px}
+.nut .serves{font-size:11px;color:var(--accent)}
+.nut .target{font-size:11px;color:var(--amber);margin-left:auto;white-space:nowrap}
+.nut .role{font-size:12px;color:var(--ink2);margin-top:2px}
+.nut .flist{display:none;margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+.nut.open .flist{display:block}
+.frow{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:3px 2px;color:var(--ink2)}
+.frow b{color:var(--ink);font-weight:500}
+.badge{display:inline-block;font-size:10px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:1px 8px;color:var(--ink2);margin-left:4px}
+.ph{color:var(--ink3);font-size:13px;text-align:center;padding:24px 10px}
+footer{margin-top:10px;color:var(--ink3);font-size:11px;line-height:1.8}
+footer a{color:var(--ink2)}
+.note{font-size:11px;color:var(--ink3);margin-top:10px}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧭 栄養コンパス<span class="sub">Nutrient Compass</span></h1>
+  <p class="tagline">悩みを選ぶと、効く栄養素と「何をどれだけ食べるか」の目安、今日のおすすめ食材と料理を示す。全部この端末の中で。</p>
+
+  <div class="card">
+    <h2>いまの悩みを選ぶ（いくつでも）</h2>
+    <div class="sub2">複数選ぶほど、「まとめて効く食材」が見つかる</div>
+    <div class="goals" id="goals"></div>
+  </div>
+
+  <div class="card today hidden" id="todayCard">
+    <h2 id="todayTitle">🥢 今日のおすすめ食材</h2>
+    <div class="sub2" id="todaySub"></div>
+    <div id="picks"></div>
+    <div id="dishes"></div>
+    <div class="note">おすすめは毎日入れ替わる。同じ悩みでも、明日はまた違う顔ぶれだ。</div>
+  </div>
+
+  <div class="card hidden" id="nutCard">
+    <h2>📚 あなたの栄養素プラン</h2>
+    <div class="sub2">効き目の大きい順。タップで「何をどれだけ食べればいいか」が開く</div>
+    <div id="nuts"></div>
+  </div>
+
+  <div class="card" id="emptyCard"><div class="ph">上の悩みを選ぶと、羅針盤が動き出す</div></div>
+
+  <footer>
+    ⚠️ 本アプリは食品と栄養の一般的な情報を示すもので、医療アドバイスではありません。数値は日本人の食事摂取基準等を参考にした目安です。持病がある方・服薬中・妊娠中の方は、医師や管理栄養士にご相談ください。<br>
+    選択はこのブラウザのlocalStorageにのみ保存。サーバー・アカウント・トラッキングは無い。 · <a href="https://github.com/yuriqa-lab" rel="noopener">Yuriqa Lab</a>
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script>
+var LS="nutrient-compass-v1";
+var sel={};
+try{ var sv=JSON.parse(localStorage.getItem(LS)||"{}"); if(sv.goals) sel=sv.goals; }catch(e){}
+// ?goals=gray,skin で悩みを直接指定して開ける（共有・ブックマーク用）
+var qg=new URLSearchParams(location.search).get("goals");
+if(qg){ sel={}; qg.split(",").forEach(function(id){ if(GOALS.some(function(g){return g.id===id;})) sel[id]=true; }); }
+function save(){ localStorage.setItem(LS, JSON.stringify({goals:sel})); }
+
+function renderGoals(){
+  var el=document.getElementById("goals"); el.innerHTML="";
+  GOALS.forEach(function(g){
+    var b=document.createElement("button");
+    b.className="goal"+(sel[g.id]?" on":"");
+    b.innerHTML='<span class="em">'+g.emoji+'</span><span>'+g.name+'</span>';
+    b.onclick=function(){ if(sel[g.id]) delete sel[g.id]; else sel[g.id]=true; save(); render(); };
+    el.appendChild(b);
+  });
+}
+
+function activeGoals(){ return GOALS.filter(function(g){ return sel[g.id]; }); }
+
+// 栄養素スコア＝選んだ悩みの重みの合計
+function nutrientScores(){
+  var s={};
+  activeGoals().forEach(function(g){
+    Object.keys(g.nutrients).forEach(function(n){ s[n]=(s[n]||0)+g.nutrients[n]; });
+  });
+  return s;
+}
+// 食材スコア＝含まれる栄養素スコアの合計（食材→栄養素の索引を構築）
+function foodIndex(){
+  var idx={};
+  Object.keys(NUTRIENTS).forEach(function(nid){
+    NUTRIENTS[nid].foods.forEach(function(f){
+      var base=f[0].split(" ")[0];
+      if(!idx[base]) idx[base]={name:f[0], nutrients:{}};
+      idx[base].nutrients[nid]=f[1];
+    });
+  });
+  return idx;
+}
+// 日替わりの種（日付で決まる・再読込しても同じ）
+function daySeed(){ var d=new Date(); return d.getFullYear()*372+(d.getMonth()+1)*31+d.getDate(); }
+
+function render(){
+  renderGoals();
+  var goals=activeGoals();
+  var has=goals.length>0;
+  document.getElementById("todayCard").classList.toggle("hidden",!has);
+  document.getElementById("nutCard").classList.toggle("hidden",!has);
+  document.getElementById("emptyCard").classList.toggle("hidden",has);
+  if(!has) return;
+
+  var ns=nutrientScores();
+  var ranked=Object.keys(ns).sort(function(a,b){ return ns[b]-ns[a]; });
+
+  // 栄養素プラン
+  var nutsEl=document.getElementById("nuts"); nutsEl.innerHTML="";
+  ranked.forEach(function(nid){
+    var n=NUTRIENTS[nid]; if(!n) return;
+    var serves=goals.filter(function(g){ return g.nutrients[nid]; });
+    var div=document.createElement("div"); div.className="nut";
+    var flist=n.foods.map(function(f){ return '<div class="frow"><b>'+f[0]+'</b><span>'+f[1]+'</span></div>'; }).join("");
+    div.innerHTML='<div class="head"><span class="nname">'+n.name+'</span>'
+      +'<span class="serves">'+serves.map(function(g){return g.emoji;}).join("")+' '+serves.length+'つの悩みに効く</span>'
+      +'<span class="target">'+n.target+'</span></div>'
+      +'<div class="role">'+n.role+'</div><div class="flist">'+flist+'</div>';
+    div.querySelector(".head").onclick=function(){ div.classList.toggle("open"); };
+    nutsEl.appendChild(div);
+  });
+
+  // 今日のおすすめ食材：上位栄養素をカバーする食材を集計
+  var idx=foodIndex();
+  var fscores=Object.keys(idx).map(function(k){
+    var sc=0, hits=[];
+    Object.keys(idx[k].nutrients).forEach(function(nid){
+      if(ns[nid]){ sc+=ns[nid]; hits.push(NUTRIENTS[nid].name); }
+    });
+    return {key:k, name:idx[k].name, score:sc, hits:hits};
+  }).filter(function(f){ return f.score>0; }).sort(function(a,b){ return b.score-a.score; });
+  var pool=fscores.slice(0,12);
+  var seed=daySeed();
+  var picks=[];
+  for(var i=0;i<Math.min(5,pool.length);i++) picks.push(pool[(seed+i*7)%pool.length]);
+  // 重複除去
+  var seen={}; picks=picks.filter(function(p){ if(seen[p.key])return false; seen[p.key]=1; return true; });
+  picks.sort(function(a,b){ return b.score-a.score; }); // 今日の顔ぶれを「効く順」で表示
+
+  var d=new Date();
+  document.getElementById("todaySub").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日・選んだ悩み"+goals.length+"つに、まとめて効く順";
+  var pe=document.getElementById("picks"); pe.innerHTML="";
+  picks.forEach(function(p){
+    var row=document.createElement("div"); row.className="pick";
+    row.innerHTML='<span class="fname">'+p.key+'</span><span class="hits">◎ '
+      +p.hits.slice(0,4).join("・")+(p.hits.length>4?" ほか":"")+'</span>';
+    pe.appendChild(row);
+  });
+
+  // 今日の料理：おすすめ食材を使う料理を優先
+  var de=document.getElementById("dishes"); de.innerHTML="";
+  var dscored=DISHES.map(function(dish){
+    var sc=0; dish.foods.forEach(function(f){ picks.forEach(function(p){ if(p.key.indexOf(f)>=0||f.indexOf(p.key)>=0) sc++; }); });
+    return {d:dish, sc:sc};
+  }).sort(function(a,b){ return b.sc-a.sc; });
+  dscored.slice(0,3).forEach(function(x){
+    if(x.sc===0) return;
+    var el=document.createElement("div"); el.className="dish";
+    el.innerHTML='<b>🍳 '+x.d.name+'</b><div class="dm">'+x.d.memo+'</div>';
+    de.appendChild(el);
+  });
+}
+render();
+</script>
+</body>
+</html>

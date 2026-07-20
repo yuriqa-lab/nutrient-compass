@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>栄養コンパス — Nutrient Compass</title>
-<meta name="description" content="悩みを選ぶと、効く栄養素・食べる量の目安・今日のおすすめ食材と料理を示す、ローカル完結の栄養羅針盤。">
+<meta name="description" content="気になるテーマを選ぶと、関連する栄養素・食品量の目安・日替わりの食材と料理アイデアを示す、ローカル完結の栄養探索ツール。">
 <style>
 :root{
   --bg:#131511; --surface:#1b1e18; --surface2:#232720; --line:#31362c;
@@ -58,11 +58,11 @@ footer a{color:var(--ink2)}
 <body>
 <div class="wrap">
   <h1>🧭 栄養コンパス<span class="sub">Nutrient Compass</span></h1>
-  <p class="tagline">悩みを選ぶと、効く栄養素と「何をどれだけ食べるか」の目安、今日のおすすめ食材と料理を示す。全部この端末の中で。</p>
+  <p class="tagline">気になるテーマを選ぶと、関連する栄養素と食品量の目安、今日の食材・料理アイデアを示す。全部この端末の中で。</p>
 
   <div class="card">
-    <h2>いまの悩みを選ぶ（いくつでも）</h2>
-    <div class="sub2">複数選ぶほど、「まとめて効く食材」が見つかる</div>
+    <h2>気になるテーマを選ぶ（いくつでも）</h2>
+    <div class="sub2">複数選ぶと、いくつかのテーマに共通する食材候補が見つかる</div>
     <div class="goals" id="goals"></div>
   </div>
 
@@ -71,20 +71,21 @@ footer a{color:var(--ink2)}
     <div class="sub2" id="todaySub"></div>
     <div id="picks"></div>
     <div id="dishes"></div>
-    <div class="note">おすすめは毎日入れ替わる。同じ悩みでも、明日はまた違う顔ぶれだ。</div>
+    <div class="note">おすすめは毎日入れ替わる。同じテーマでも、明日はまた違う顔ぶれだ。</div>
   </div>
 
   <div class="card hidden" id="nutCard">
-    <h2>📚 あなたの栄養素プラン</h2>
-    <div class="sub2">効き目の大きい順。タップで「何をどれだけ食べればいいか」が開く</div>
+    <h2>📚 栄養と食材の探索ガイド</h2>
+    <div class="sub2">選んだテーマとの関連度順。タップで食品に含まれる量の目安が開く</div>
     <div id="nuts"></div>
   </div>
 
-  <div class="card" id="emptyCard"><div class="ph">上の悩みを選ぶと、羅針盤が動き出す</div></div>
+  <div class="card" id="emptyCard"><div class="ph">上のテーマを選ぶと、食材の候補が現れる</div></div>
 
   <footer>
-    ⚠️ 本アプリは食品と栄養の一般的な情報を示すもので、医療アドバイスではありません。数値は日本人の食事摂取基準等を参考にした目安です。持病がある方・服薬中・妊娠中の方は、医師や管理栄養士にご相談ください。<br>
-    選択はこのブラウザのlocalStorageにのみ保存。サーバー・アカウント・トラッキングは無い。 · <a href="https://github.com/yuriqa-lab" rel="noopener">Yuriqa Lab</a>
+    ⚠️ 一般的な食品情報を探索する試作ツールです。診断・治療・不足判定・個別の栄養指導は行いません。関連度は編集上のルールで、医学的な効果量ではありません。持病・服薬・妊娠・アレルギーがある場合は医師または管理栄養士にご相談ください。<br>
+    参考：<a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/kenkou/eiyou/syokuji_kijyun.html" rel="noopener">日本人の食事摂取基準（2025年版）</a> · <a href="https://www.mext.go.jp/a_menu/syokuhinseibun/mext_01110.html" rel="noopener">日本食品標準成分表</a><br>
+    選択はこのブラウザのlocalStorageにのみ保存。サーバー・アカウント・トラッキングは無い。 · <a href="https://yuriqa-lab.github.io/" rel="noopener">Yuriqa Lab</a>
   </footer>
 </div>
 
@@ -93,7 +94,7 @@ footer a{color:var(--ink2)}
 var LS="nutrient-compass-v1";
 var sel={};
 try{ var sv=JSON.parse(localStorage.getItem(LS)||"{}"); if(sv.goals) sel=sv.goals; }catch(e){}
-// ?goals=gray,skin で悩みを直接指定して開ける（共有・ブックマーク用）
+// ?goals=gray,skin でテーマを直接指定して開ける（共有・ブックマーク用）
 var qg=new URLSearchParams(location.search).get("goals");
 if(qg){ sel={}; qg.split(",").forEach(function(id){ if(GOALS.some(function(g){return g.id===id;})) sel[id]=true; }); }
 function save(){ localStorage.setItem(LS, JSON.stringify({goals:sel})); }
@@ -111,7 +112,7 @@ function renderGoals(){
 
 function activeGoals(){ return GOALS.filter(function(g){ return sel[g.id]; }); }
 
-// 栄養素スコア＝選んだ悩みの重みの合計
+// 栄養素スコア＝選んだテーマに設定した編集上の関連度の合計
 function nutrientScores(){
   var s={};
   activeGoals().forEach(function(g){
@@ -154,7 +155,7 @@ function render(){
     var div=document.createElement("div"); div.className="nut";
     var flist=n.foods.map(function(f){ return '<div class="frow"><b>'+f[0]+'</b><span>'+f[1]+'</span></div>'; }).join("");
     div.innerHTML='<div class="head"><span class="nname">'+n.name+'</span>'
-      +'<span class="serves">'+serves.map(function(g){return g.emoji;}).join("")+' '+serves.length+'つの悩みに効く</span>'
+      +'<span class="serves">'+serves.map(function(g){return g.emoji;}).join("")+' '+serves.length+'つのテーマに関連</span>'
       +'<span class="target">'+n.target+'</span></div>'
       +'<div class="role">'+n.role+'</div><div class="flist">'+flist+'</div>';
     div.querySelector(".head").onclick=function(){ div.classList.toggle("open"); };
@@ -176,10 +177,10 @@ function render(){
   for(var i=0;i<Math.min(5,pool.length);i++) picks.push(pool[(seed+i*7)%pool.length]);
   // 重複除去
   var seen={}; picks=picks.filter(function(p){ if(seen[p.key])return false; seen[p.key]=1; return true; });
-  picks.sort(function(a,b){ return b.score-a.score; }); // 今日の顔ぶれを「効く順」で表示
+  picks.sort(function(a,b){ return b.score-a.score; }); // 今日の候補を関連度順で表示
 
   var d=new Date();
-  document.getElementById("todaySub").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日・選んだ悩み"+goals.length+"つに、まとめて効く順";
+  document.getElementById("todaySub").textContent=(d.getMonth()+1)+"月"+d.getDate()+"日・選んだテーマ"+goals.length+"つとの関連度順";
   var pe=document.getElementById("picks"); pe.innerHTML="";
   picks.forEach(function(p){
     var row=document.createElement("div"); row.className="pick";

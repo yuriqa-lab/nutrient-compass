@@ -1,50 +1,72 @@
 # 栄養コンパス — Nutrient Compass
 
+**Live site:** <https://yuriqa-lab.github.io/nutrient-compass/>
+
 ![栄養コンパス](./docs/screenshot.png)
 
-A local-first nutrition compass: select your wellness concerns (multiple at
-once), and it shows which nutrients help, how much of which foods to eat, and
-today's recommended ingredients and dishes — rotating daily.
+A Japanese-first, local-first food-and-nutrition exploration tool. Select one or
+more wellness themes to see related nutrients, reference food portions, and
+rotating ingredient and dish ideas.
 
-悩みを選ぶと「効く栄養素」「何をどれだけ食べるか」「今日のおすすめ食材と料理」を
-示す羅針盤。悩みは複数選べて、**選ぶほど「まとめて効く食材」が見つかる**のが特徴です。
+気になるテーマを選ぶと、関連する栄養素、食品に含まれる量の目安、
+日替わりの食材・料理アイデアを確認できる、ローカル完結の探索ツールです。
 
-## How it works — no AI API, by design
+## Features
 
-The relationships between concerns, nutrients, and foods are stable knowledge.
-This app encodes them as data (18 concerns, 27 nutrients with daily targets,
-food portions, 19 dishes) and uses a transparent scoring engine:
+- 18 selectable food and wellness themes
+- 27 nutrient and food-reference entries
+- Multi-theme ingredient matching
+- Date-seeded daily rotation
+- Shareable theme presets via URL, for example `?goals=gray,skin,eyes`
+- Local-only preference storage
+- No AI API, account, analytics, or tracking
 
-1. Each selected concern weights its key nutrients
-2. Foods are scored by how many of *your* weighted nutrients they cover —
-   multi-concern selections surface "one dish, many benefits" ingredients
-3. A date-seeded rotation keeps daily picks fresh without randomness on reload
+## How the matching works
 
-Zero API calls, zero running cost, works offline. Shareable presets via URL,
-e.g. `?goals=gray,skin,eyes`.
+The app encodes relationships between themes, nutrients, and foods as editorial
+data. Values from 1–3 indicate relative relevance inside this prototype; they
+are **not** clinical effect sizes, diagnoses, treatment recommendations, or
+personalized nutrition advice.
 
-## Disclaimer
+1. Selected themes contribute relevance weights to related nutrients.
+2. Foods are ranked by how many of those nutrient themes they overlap with.
+3. A date-seeded rotation varies the displayed ideas without changing on reload.
 
-This app provides general food and nutrition information, not medical advice.
-Daily targets are approximations based on public dietary reference intakes for
-Japan. Consult a physician or registered dietitian for medical conditions,
-medication interactions, or pregnancy.
+The scoring is intentionally inspectable and rule-based.
+
+## Reference basis and limitations
+
+General daily-reference values are checked against the
+[Dietary Reference Intakes for Japanese (2025)](https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/kenkou/eiyou/syokuji_kijyun.html).
+Food composition values are approximate and draw on the
+[Standard Tables of Food Composition in Japan](https://www.mext.go.jp/a_menu/syokuhinseibun/mext_01110.html).
+
+Values vary by age, sex, product, variety, portion, and preparation. The app
+does not diagnose deficiencies or account for allergies, medications,
+pregnancy, or medical conditions. It provides general food information, not
+medical advice. See also the
+[Consumer Affairs Agency guidance on health-food information](https://www.caa.go.jp/policies/policy/consumer_safety/food_safety/food_safety_portal/health_food/).
 
 ## Privacy and storage
 
-Selections live only in this browser's `localStorage`. No backend, accounts,
-analytics, or tracking. The app makes no network requests.
+Selections are stored only in this browser's `localStorage`. The app has no
+backend, accounts, analytics, advertising, or tracking and makes no application
+network requests.
 
-## Development notes
+## Technology and development
 
-Built at Yuriqa Lab with AI pair-programming assistance for implementation.
-The nutrition content model and food selections draw on the author's training
-as a licensed chef and certified confectionery hygienist; product decisions
-are human.
+Plain HTML, CSS, and JavaScript. No build step or runtime dependencies.
 
-## Development
+Open `index.html` in a browser, or serve the directory statically:
 
-No build step. Open `index.html` in a browser.
+```bash
+python3 -m http.server 8000
+```
+
+## Development provenance
+
+Implementation used AI-assisted pair programming. Yuriqa Lab directed the
+product, reviewed the code and content, and performed release testing.
 
 ## License
 

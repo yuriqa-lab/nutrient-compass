@@ -36,9 +36,10 @@ The scoring is intentionally inspectable and rule-based.
 
 ## Reference basis and limitations
 
-General daily-reference values are checked against the
+Where public daily-reference values are established, the app uses general
+references informed by the
 [Dietary Reference Intakes for Japanese (2025)](https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/kenkou/eiyou/syokuji_kijyun.html).
-Food composition values are approximate and draw on the
+Food composition values are approximate and informed by the
 [Standard Tables of Food Composition in Japan](https://www.mext.go.jp/a_menu/syokuhinseibun/mext_01110.html).
 
 Values vary by age, sex, product, variety, portion, and preparation. The app

@@ -12,8 +12,8 @@ today's recommended ingredients and dishes — rotating daily.
 ## How it works — no AI API, by design
 
 The relationships between concerns, nutrients, and foods are stable knowledge.
-This app encodes them as data (12 concerns, 23 nutrients with daily targets,
-food portions, 16 dishes) and uses a transparent scoring engine:
+This app encodes them as data (18 concerns, 27 nutrients with daily targets,
+food portions, 19 dishes) and uses a transparent scoring engine:
 
 1. Each selected concern weights its key nutrients
 2. Foods are scored by how many of *your* weighted nutrients they cover —
